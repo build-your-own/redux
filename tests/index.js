@@ -1,30 +1,52 @@
+import { applyMiddleware, createStore, combineReducers } from './redux';
 
-const redux = require('../index');
-
-const CHANGE_NAME = 'CHANGE_NAME';
-
-const reducerInitialState = {
-  name: 'bob',
-  age: 20,
-};
-
-exports.tReducer = function (reducerInitialState = reducerInitialState, action) {
-  switch (action.type) {
-    case CHANGE_NAME:
-      return {
-        reducerInitialState,
-        name: action.payload,
-      };
-    default:
-      return reducerInitialState;
-  }
+const calcInitialState = {
+	num: 0,
 }
 
-const store = redux.createStore(tReducer);
+const calcReducer = (state = calcInitialState, action) => {
+	switch (action.type) {
+		case 'INCREASE':
+			return { num: state.num + 1 };
+		case 'DECREASE':
+			return { num: state.num - 1 };
+		default:
+			return state;
+	}
+}
 
-store.dispatch({
-  type: CHANGE_NAME,
-  payload: Math.random(),
+const listInitialState = {
+	list: [],
+}
+
+const listReducer = (state = listInitialState, action) => {
+	switch (action.type) {
+		case 'ADD':
+			return { list: state.list.concat(action.item) };
+		case 'DELETE':
+			return { list: state.list.filter((item, index) => index !== action.index) };
+		default:
+			return state;
+	}
+}
+
+const rootReducer = combineReducers({
+	calc: calcReducer,
+	list: listReducer,
 });
 
-console.log(store.getState());
+const store = createStore(rootReducer, undefined, applyMiddleware(
+	function logger({ getState }) {
+		return beforeDispatchFn => {
+			return function finalDispatchFn(action) {
+				console.log('will dispatch', action)
+				const returnValue = beforeDispatchFn(action); ``
+				console.log('state after dispatch', getState())
+				return returnValue
+			}
+		};
+	}
+));
+
+store.dispatch({ type: 'INCREASE' });
+console.log(store.getState().calc); // { num: 1 }
