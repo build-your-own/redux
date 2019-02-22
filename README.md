@@ -296,7 +296,7 @@ const applyMiddleware = (...middlewares) =>
     if(middlewareRes.length === 1) {
       composedMiddleware = middlewareRes[0];
     } else {
-      const composedMiddleware = middlewareRes.reduce((a, b) => next => a(b(next)));
+      composedMiddleware = middlewareRes.reduce((a, b) => next => a(b(next)));
     }
     const newDispatch = composedMiddleware(store.dispatch);
     return ({
