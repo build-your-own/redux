@@ -1,71 +1,62 @@
-const combineReducers = (obj) => {
-	const type = '@INIT';
-	const initialState = {};
-	const keys = Object.keys(obj);
-	keys.forEach(key => {
-		initialState[key] = obj[key](undefined, { type });
-	});
-	return function (state = initialState, action) {
-		let nextState = Object.assign({}, state);
-		if (action && action.type) {
-			keys.forEach(key => {
-				nextState[key] = obj[key](state[key], action);
-			});
-		}
-		return nextState;
-	}
-};
+import { applyMiddleware, createStore, combineReducers } from './redux';
 
-const applyMiddleware = (...middlewares) =>
-	createStore => (...args) => {
-		const store = createStore(...args);
-		/** 获取装饰过的 dispatch
-    * 最终得到的 middlewareRes 为：
-    * [
-    *   function anonymousFn1(next) {
-    *      return function fn1(action) {
-    *        console.log('middleware1');
-    *        return next(action);
-    *      }
-    *   },
-    *   function anonymousFn2(next) {
-    *      return function fn2(action) {
-    *        console.log('middleware2');
-    *        return next(action);
-    *      }
-    *   }
-    * ]
-    */
-		const middlewareRes = middlewares.map(item => item(store));
-		let composedMiddleware;
-		if (middlewareRes.length === 1) {
-			composedMiddleware = middlewareRes[0];
-		} else {
-			composedMiddleware = middlewareRes.reduce((a, b) => next => a(b(next)));
-		}
-		const newDispatch = composedMiddleware(store.dispatch);
-		return ({
-			...store,
-			dispatch: newDispatch,
-		});
-	}
+const calcInitialState = {
+	num: 0,
+}
 
-const createStore = (reducer, initialState, enhancedCreateStore) => {
-	let state = initialState || reducer(undefined, { type: '@INIT' });
-	if (enhancedCreateStore && typeof enhancedCreateStore === 'function') {
-		return enhancedCreateStore(createStore)(reducer, initialState);
-	}
-	const result = {
-		dispatch: (actionObj = {}) => {
-			state = reducer(state || undefined, actionObj);
-			return result;
-		},
-		// getState 返回当前的 store
-		getState: () => {
+const calcReducer = (state = calcInitialState, action) => {
+	switch (action.type) {
+		case 'INCREASE':
+			return { num: state.num + 1 };
+		case 'DECREASE':
+			return { num: state.num - 1 };
+		default:
 			return state;
-		},
-	};
-	return result;
-};
+	}
+}
 
-export { createStore, combineReducers, applyMiddleware };
+const listInitialState = {
+	list: [],
+}
+
+const listReducer = (state = listInitialState, action) => {
+	switch (action.type) {
+		case 'ADD':
+			return { list: state.list.concat(action.item) };
+		case 'DELETE':
+			return { list: state.list.filter((item, index) => index !== action.index) };
+		default:
+			return state;
+	}
+}
+
+const rootReducer = combineReducers({
+	calc: calcReducer,
+	list: listReducer,
+});
+
+const store = createStore(rootReducer, undefined, applyMiddleware(
+	function logger({ getState }) {
+		return beforeDispatchFn => {
+			return function finalDispatchFn(action) {
+				console.log('will dispatch1', action)
+				const returnValue = beforeDispatchFn(action); ``
+				console.log('state after dispatch1', getState())
+				return returnValue
+			}
+		};
+	},
+	function logger({ getState }) {
+		return beforeDispatchFn => {
+			return function finalDispatchFn(action) {
+				console.log('will dispatch2', action)
+				const returnValue = beforeDispatchFn(action); ``
+				console.log('state after dispatch2', getState())
+				return returnValue
+			}
+		};
+	}
+));
+
+store.dispatch({ type: 'INCREASE' });
+console.log(store.getState().calc); // { num: 1 }

@@ -1,27 +1,30 @@
 {
-  "name": "redux",
+  "name": "@build-your-own/redux",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx babel ./src -d ./public -s true"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/build-your-own/redux.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "mrkou47",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/build-your-own/redux/issues"
   },
   "homepage": "https://github.com/build-your-own/redux#readme",
   "dependencies": {
-    "redux": "^4.0.0",
-    "redux-thunk": "^2.2.0"
+    "redux": "^4.0.1",
+    "redux-thunk": "^2.3.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "eslint": "^5.14.1"
   }
 }
